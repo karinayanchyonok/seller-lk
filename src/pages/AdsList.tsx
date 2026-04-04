@@ -1,16 +1,24 @@
-import { Container, Typography, Box } from '@mui/material';
+// src/pages/AdsList.tsx
+import { Box, Stack } from '@mui/material';
+import { ListingControlsSection } from '../components/listings/ListingControlsSection.tsx';
+import { ListingsCatalogSection } from '../components/listings/ListingsCatalogSection.tsx';
+import { ListingsHeaderSection } from '../components/listings/ListingsHeaderSection.tsx';
 
-export const AdsList = () => {
-  return (
-    <Container maxWidth="lg"  color="black">
-      <Box sx={{ my: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Мои объявления
-        </Typography>
-        <Typography variant="body1">
-          Здесь будет список объявлений
-        </Typography>
-      </Box>
-    </Container>
-  );
+const AdsList = () => {
+    return (
+        <Box
+            component="main"
+            sx={{ backgroundColor: '#f7f5f8', width: '96%', minHeight: '100vh' }}
+            px={4}
+            py={1.5}
+        >
+            <Stack spacing={2}>
+                <ListingsHeaderSection totalCount={1001/*filteredAds.length TODO*/} />
+                <ListingControlsSection />
+                <ListingsCatalogSection />
+            </Stack>
+        </Box>
+    );
 };
+
+export default AdsList;
