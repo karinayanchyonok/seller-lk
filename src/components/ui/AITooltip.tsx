@@ -41,46 +41,58 @@ export const AITooltip = ({
                 },
             }}
         >
-            <DialogTitle sx={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center',
-                pb: 1,
-            }}>
-                <Typography variant="h6" fontWeight="bold" color="#ed6c02">
-                    🤖 AI-помощник
-                </Typography>
+            <DialogTitle
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    pb: 1,
+                }}
+            >
+                <Box display="flex" alignItems="center" gap={1}>
+                    <Typography variant="h6" fontWeight="bold" color="#ed6c02" component="span">
+                        AI-помощник
+                    </Typography>
+                </Box>
                 <IconButton onClick={onClose} size="small">
                     <CloseIcon />
                 </IconButton>
             </DialogTitle>
-            
+
             <DialogContent>
                 {loading ? (
                     <Box sx={{ textAlign: 'center', py: 4 }}>
                         <Typography>Загрузка рекомендации...</Typography>
                     </Box>
                 ) : (
-                    <Typography 
-                        variant="body1" 
-                        sx={{ 
-                            whiteSpace: 'pre-wrap', 
-                            lineHeight: 1.6,
-                            color: 'text.primary',
-                        }}
-                    >
+                    <Box>
                         {title && (
-                            <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1 }}>
+                            <Typography 
+                                variant="subtitle1" 
+                                fontWeight="bold" 
+                                sx={{ mb: 1 }}
+                                component="div"
+                            >
                                 {title}
                             </Typography>
                         )}
-                        {content}
-                    </Typography>
+                        <Typography
+                            variant="body1"
+                            sx={{
+                                whiteSpace: 'pre-wrap',
+                                lineHeight: 1.6,
+                                color: 'text.primary',
+                            }}
+                            component="div"
+                        >
+                            {content}
+                        </Typography>
+                    </Box>
                 )}
             </DialogContent>
-            
+
             <DialogActions sx={{ p: 2, pt: 0 }}>
-                <Button 
+                <Button
                     onClick={onClose}
                     sx={{
                         color: '#848388',

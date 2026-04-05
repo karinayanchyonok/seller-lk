@@ -7,6 +7,7 @@ export const getMarketPriceFromAI = async (
     category: string,
     currentPrice: number
 ): Promise<string> => {
+
     // Проверка API ключа
     if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'your_openrouter_api_key_here') {
         return 'API ключ не настроен. Добавьте VITE_OPENROUTER_API_KEY в файл .env';
@@ -22,7 +23,17 @@ export const getMarketPriceFromAI = async (
     const prompt = `Определи рыночную цену для товара. Категория: ${categoryName}. Текущая цена: ${currentPrice} рублей.
     
     Ответ дай в формате:
-    Средняя цена: [диапазон] рублей - [состояние]`;
+    Средняя цена: [диапазон] рублей - [состояние]
+    СОСТОЯНИЕ ДОЛЖНО ПОДХОДИТЬ КАТЕГОРИИ И ТИПУ ТОВАРА
+    ОТВЕТ СДЕЛАЙ БЕЗ МАРКИРОВКИ и без подобных ссылкок - [1][2][3][6][8][9][10]
+    В конце сообщения напиши какую цену рекомендуешь, примерно среднюю цену из тех, что ты предлагал, округли 
+    
+    Пример:
+    Средняя цена на MacBook Pro 16" M1 Pro (16/512GB):
+    115 000 - 135 000 рублей - отличное состояние.
+    От 140 000 рублей - идеал, малый износ АКБ.
+    90 000 - 110 000 рублей - срочно или с дефектами.
+    Рекомендуем цену: 125 000 рублей`;
 
     try {
         const response = await fetch(OPENROUTER_URL, {
@@ -52,9 +63,7 @@ export const getMarketPriceFromAI = async (
 
         if (!response.ok) {
             const errorData = await response.json();
-            console.error('API Error Details:', errorData);
-            
-            // Обработка конкретных ошибок
+
             if (response.status === 401) {
                 return 'Ошибка авторизации. Проверьте API ключ OpenRouter.';
             }
@@ -64,14 +73,15 @@ export const getMarketPriceFromAI = async (
             if (response.status === 429) {
                 return 'Превышен лимит запросов. Попробуйте позже.';
             }
-            
+
             return `Ошибка API: ${errorData.error?.message || 'Неизвестная ошибка'}`;
         }
 
         const data = await response.json();
+        console.log('Получен ответ от AI:', data.choices[0].message.content);
         return data.choices[0].message.content;
     } catch (error) {
-        console.error('Ошибка получения рыночной цены:', error);
+        console.error('7. Ошибка при запросе:', error);
         return 'Не удалось получить информацию о рыночной цене. Проверьте подключение к интернету.';
     }
 };
@@ -114,7 +124,7 @@ export const improveDescriptionFromAI = async (
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+                Authorization: `Bearer ${OPENROUTER_API_KEY}`,
                 'HTTP-Referer': window.location.origin,
                 'X-Title': 'Seller LK App',
             },
@@ -123,12 +133,13 @@ export const improveDescriptionFromAI = async (
                 messages: [
                     {
                         role: 'system',
-                        content: 'Ты профессиональный копирайтер. Пиши привлекательные описания для объявлений на русском языке. Отвечай только текстом без маркдауна.'
+                        content:
+                            'Ты профессиональный копирайтер. Пиши привлекательные описания для объявлений на русском языке. Отвечай только текстом без маркдауна.',
                     },
                     {
                         role: 'user',
-                        content: prompt
-                    }
+                        content: prompt,
+                    },
                 ],
                 temperature: 0.8,
                 max_tokens: 500,
@@ -138,7 +149,7 @@ export const improveDescriptionFromAI = async (
         if (!response.ok) {
             const errorData = await response.json();
             console.error('API Error Details:', errorData);
-            
+
             if (response.status === 401) {
                 return 'Ошибка авторизации. Проверьте API ключ OpenRouter.';
             }
@@ -148,7 +159,7 @@ export const improveDescriptionFromAI = async (
             if (response.status === 429) {
                 return 'Превышен лимит запросов. Попробуйте позже.';
             }
-            
+
             return `Ошибка API: ${errorData.error?.message || 'Неизвестная ошибка'}`;
         }
 

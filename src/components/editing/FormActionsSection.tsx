@@ -39,7 +39,7 @@ export const FormActionsSection = ({
         setLoading(true);
         setTooltipOpen(true);
         setAiResponse('Запрос к AI...');
-        
+
         try {
             const response = await improveDescriptionFromAI(
                 title,
@@ -79,17 +79,13 @@ export const FormActionsSection = ({
                     }}
                     inputProps={{ maxLength: DESCRIPTION_MAX_LENGTH }}
                     helperText={
-                        <Box 
-                            component="span" 
-                            display="flex" 
+                        <Box
+                            component="span"
+                            display="flex"
                             justifyContent="flex-end"
                             sx={{ width: '100%' }}
                         >
-                            <Typography 
-                                variant="body2" 
-                                color="text.disabled"
-                                component="span"
-                            >
+                            <Typography variant="body2" color="text.disabled" component="span">
                                 {description.length} / {DESCRIPTION_MAX_LENGTH}
                             </Typography>
                         </Box>
@@ -145,12 +141,14 @@ export const FormActionsSection = ({
                     },
                 }}
             >
-                <DialogTitle sx={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    pb: 1,
-                }}>
+                <DialogTitle
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        pb: 1,
+                    }}
+                >
                     <Typography variant="h6" fontWeight="bold" color="#ed6c02">
                         AI-помощник
                     </Typography>
@@ -158,17 +156,17 @@ export const FormActionsSection = ({
                         <CloseIcon />
                     </IconButton>
                 </DialogTitle>
-                
+
                 <DialogContent>
                     {loading ? (
                         <Box sx={{ textAlign: 'center', py: 4 }}>
                             <Typography>Загрузка рекомендации...</Typography>
                         </Box>
                     ) : (
-                        <Typography 
-                            variant="body1" 
-                            sx={{ 
-                                whiteSpace: 'pre-wrap', 
+                        <Typography
+                            variant="body1"
+                            sx={{
+                                whiteSpace: 'pre-wrap',
                                 lineHeight: 1.6,
                                 color: 'text.primary',
                             }}
@@ -177,9 +175,9 @@ export const FormActionsSection = ({
                         </Typography>
                     )}
                 </DialogContent>
-                
+
                 <DialogActions sx={{ p: 2, pt: 0 }}>
-                    <Button 
+                    <Button
                         onClick={() => setTooltipOpen(false)}
                         sx={{
                             color: '#848388',

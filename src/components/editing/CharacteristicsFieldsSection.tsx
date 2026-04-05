@@ -35,51 +35,71 @@ export const CharacteristicsFieldsSection = ({
     const [tooltipOpen, setTooltipOpen] = useState(false);
     const [aiResponse, setAiResponse] = useState('');
     const [loading, setLoading] = useState(false);
+    const [suggestedPrice, setSuggestedPrice] = useState<string | null>(null);
 
     const handleClear = () => {
         setPrice('');
+    };
+
+    // Функция для парсинга цены из ответа AI
+    const parsePriceFromResponse = (text: string): string | null => {
+        // Ищем строку "Рекомендуем цену: X рублей"
+        const recommendMatch = text.match(/Рекомендуем\s*цену:\s*(\d{1,3}(?:[\s]?\d{3})*)/i);
+        if (recommendMatch) {
+            return recommendMatch[1].replace(/\s/g, '');
+        }
+        
+        // Ищем "ИТОГОВАЯ ЦЕНА: X"
+        const finalMatch = text.match(/ИТОГОВАЯ\s*ЦЕНА:\s*(\d{1,3}(?:[\s]?\d{3})*)/i);
+        if (finalMatch) {
+            return finalMatch[1].replace(/\s/g, '');
+        }
+        
+        // Ищем любую цену в конце текста (последнее число)
+        const allNumbers = text.match(/(\d{1,3}(?:[\s]?\d{3})*)/g);
+        if (allNumbers && allNumbers.length > 0) {
+            // Берем последнее число
+            const lastNumber = allNumbers[allNumbers.length - 1];
+            return lastNumber.replace(/\s/g, '');
+        }
+        
+        return null;
     };
 
     const handleMarketPrice = async () => {
         setLoading(true);
         setTooltipOpen(true);
         setAiResponse('Запрос к AI...');
-        
+        setSuggestedPrice(null);
+
         try {
             const result = await getMarketPriceFromAI('', category, Number(price));
-            if (result.success) {
-                setAiResponse(result.message);
-                // Если цена распарсилась, сохраняем ее в state для применения
-                if (result.price) {
-                    setAiResponse((prev) => prev + `\n\n[Распознанная цена: ${result.price} рублей]`);
-                }
+            console.log('Ответ от AI:', result);
+            
+            setAiResponse(result);
+            
+            // Парсим цену из ответа
+            const parsedPrice = parsePriceFromResponse(result);
+            if (parsedPrice) {
+                console.log('Распарсенная цена:', parsedPrice);
+                setSuggestedPrice(parsedPrice);
             } else {
-                setAiResponse(result.message);
+                console.log('Не удалось распарсить цену');
             }
         } catch (error) {
+            console.error('Ошибка:', error);
             setAiResponse('Ошибка получения данных. Попробуйте позже.');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleApplyPrice = async () => {
-        // Повторно запрашиваем API для получения распарсенной цены
-        setLoading(true);
-        try {
-            const result = await getMarketPriceFromAI('', category, Number(price));
-            if (result.success && result.price) {
-                setPrice(result.price);
-            } else if (result.success) {
-                // Если не удалось распарсить, показываем сообщение
-                alert('Не удалось определить цену из ответа AI. Попробуйте еще раз.');
-            }
-        } catch (error) {
-            console.error('Ошибка:', error);
-        } finally {
-            setLoading(false);
-            setTooltipOpen(false);
+    const handleApplyPrice = () => {
+        if (suggestedPrice) {
+            console.log('Применяем цену:', suggestedPrice);
+            setPrice(suggestedPrice);
         }
+        setTooltipOpen(false);
     };
 
     return (
@@ -172,12 +192,14 @@ export const CharacteristicsFieldsSection = ({
                     },
                 }}
             >
-                <DialogTitle sx={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    pb: 1,
-                }}>
+                <DialogTitle
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        pb: 1,
+                    }}
+                >
                     <Typography variant="h6" fontWeight="bold" color="#ed6c02">
                         AI-помощник
                     </Typography>
@@ -185,17 +207,17 @@ export const CharacteristicsFieldsSection = ({
                         <CloseIcon />
                     </IconButton>
                 </DialogTitle>
-                
+
                 <DialogContent>
                     {loading ? (
                         <Box sx={{ textAlign: 'center', py: 4 }}>
                             <Typography>Загрузка рекомендации...</Typography>
                         </Box>
                     ) : (
-                        <Typography 
-                            variant="body1" 
-                            sx={{ 
-                                whiteSpace: 'pre-wrap', 
+                        <Typography
+                            variant="body1"
+                            sx={{
+                                whiteSpace: 'pre-wrap',
                                 lineHeight: 1.6,
                                 color: 'text.primary',
                             }}
@@ -204,9 +226,9 @@ export const CharacteristicsFieldsSection = ({
                         </Typography>
                     )}
                 </DialogContent>
-                
+
                 <DialogActions sx={{ p: 2, pt: 0 }}>
-                    <Button 
+                    <Button
                         onClick={() => setTooltipOpen(false)}
                         sx={{
                             color: '#848388',
@@ -218,7 +240,7 @@ export const CharacteristicsFieldsSection = ({
                     <Button
                         onClick={handleApplyPrice}
                         variant="contained"
-                        disabled={loading}
+                        disabled={loading || !suggestedPrice}
                         sx={{
                             bgcolor: '#ed6c02',
                             '&:hover': { bgcolor: '#ff9800' },

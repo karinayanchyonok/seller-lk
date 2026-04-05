@@ -71,15 +71,15 @@ export const useAdsStore = create<AdsStore>()((set, get) => ({
         }
     },
 
-   fetchAdById: async (id: number) => {
-    try {
-        const response = await apiClient.get(`/items/${id}`);
-        return response.data;
-    } catch (error) {
-        console.error('Ошибка в fetchAdById:', error);
-        return null;
-    }
-},
+    fetchAdById: async (id: number) => {
+        try {
+            const response = await apiClient.get(`/items/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error('Ошибка в fetchAdById:', error);
+            return null;
+        }
+    },
 
     setSearchTerm: (term) => {
         set({ searchTerm: term, currentPage: 1 });

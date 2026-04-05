@@ -118,21 +118,30 @@ export const DescriptionFieldSection = ({
         }
     }, [category, fields, params]);
 
-    const handleClear = useCallback((id: string) => {
-        setFieldValues((prev) => ({ ...prev, [id]: '' }));
-        setParams((prev: any) => ({ ...prev, [id]: '' }));
-    }, [setParams]);
+    const handleClear = useCallback(
+        (id: string) => {
+            setFieldValues((prev) => ({ ...prev, [id]: '' }));
+            setParams((prev: any) => ({ ...prev, [id]: '' }));
+        },
+        [setParams]
+    );
 
-    const handleSelectChange = useCallback((id: string, event: SelectChangeEvent<string>) => {
-        const value = event.target.value;
-        setFieldValues((prev) => ({ ...prev, [id]: value }));
-        setParams((prev: any) => ({ ...prev, [id]: value }));
-    }, [setParams]);
+    const handleSelectChange = useCallback(
+        (id: string, event: SelectChangeEvent<string>) => {
+            const value = event.target.value;
+            setFieldValues((prev) => ({ ...prev, [id]: value }));
+            setParams((prev: any) => ({ ...prev, [id]: value }));
+        },
+        [setParams]
+    );
 
-    const handleInputChange = useCallback((id: string, value: string) => {
-        setFieldValues((prev) => ({ ...prev, [id]: value }));
-        setParams((prev: any) => ({ ...prev, [id]: value }));
-    }, [setParams]);
+    const handleInputChange = useCallback(
+        (id: string, value: string) => {
+            setFieldValues((prev) => ({ ...prev, [id]: value }));
+            setParams((prev: any) => ({ ...prev, [id]: value }));
+        },
+        [setParams]
+    );
 
     // Если нет полей для категории
     if (fields.length === 0) {
@@ -183,14 +192,19 @@ export const DescriptionFieldSection = ({
                                         renderValue={(selected) => {
                                             if (!selected) {
                                                 return (
-                                                    <Typography variant="body2" color="text.disabled">
+                                                    <Typography
+                                                        variant="body2"
+                                                        color="text.disabled"
+                                                    >
                                                         Выберите {field.label.toLowerCase()}
                                                     </Typography>
                                                 );
                                             }
                                             return (
                                                 <Typography variant="body2" color="text.primary">
-                                                    {field.labels?.[selected as keyof typeof field.labels] || selected}
+                                                    {field.labels?.[
+                                                        selected as keyof typeof field.labels
+                                                    ] || selected}
                                                 </Typography>
                                             );
                                         }}
@@ -210,7 +224,8 @@ export const DescriptionFieldSection = ({
                                         </MenuItem>
                                         {field.options?.map((opt) => (
                                             <MenuItem key={opt} value={opt}>
-                                                {field.labels?.[opt as keyof typeof field.labels] || opt}
+                                                {field.labels?.[opt as keyof typeof field.labels] ||
+                                                    opt}
                                             </MenuItem>
                                         ))}
                                     </Select>
@@ -236,7 +251,9 @@ export const DescriptionFieldSection = ({
                                             fullWidth
                                             value={currentValue}
                                             placeholder={field.placeholder}
-                                            onChange={(e) => handleInputChange(field.id, e.target.value)}
+                                            onChange={(e) =>
+                                                handleInputChange(field.id, e.target.value)
+                                            }
                                             sx={{
                                                 fontSize: 14,
                                                 py: 0.75,
@@ -251,7 +268,9 @@ export const DescriptionFieldSection = ({
                                                 onClick={() => handleClear(field.id)}
                                                 sx={{ p: 0.5, ml: 0.5 }}
                                             >
-                                                <CancelIcon sx={{ fontSize: 16, color: 'rgba(0,0,0,0.45)' }} />
+                                                <CancelIcon
+                                                    sx={{ fontSize: 16, color: 'rgba(0,0,0,0.45)' }}
+                                                />
                                             </IconButton>
                                         )}
                                     </Box>

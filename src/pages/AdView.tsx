@@ -10,9 +10,9 @@ import { useEffect, useState, useRef } from 'react';
 // Функция для преобразования категории в русский язык
 const getCategoryRussian = (category: string): string => {
     const categoryMap: Record<string, string> = {
-        'auto': 'Авто',
-        'electronics': 'Электроника',
-        'real_estate': 'Недвижимость',
+        auto: 'Авто',
+        electronics: 'Электроника',
+        real_estate: 'Недвижимость',
     };
     return categoryMap[category] || category;
 };
@@ -34,22 +34,31 @@ const getCharacteristics = (ad: any) => {
     switch (ad.category) {
         case 'electronics':
             if (isFieldFilled(params.type)) {
-                const typeMap: Record<string, string> = { phone: 'Телефон', laptop: 'Ноутбук', misc: 'Другое' };
+                const typeMap: Record<string, string> = {
+                    phone: 'Телефон',
+                    laptop: 'Ноутбук',
+                    misc: 'Другое',
+                };
                 characteristics.push({ label: 'Тип', value: typeMap[params.type] || params.type });
             }
-            if (isFieldFilled(params.brand)) characteristics.push({ label: 'Бренд', value: params.brand });
-            if (isFieldFilled(params.model)) characteristics.push({ label: 'Модель', value: params.model });
+            if (isFieldFilled(params.brand))
+                characteristics.push({ label: 'Бренд', value: params.brand });
+            if (isFieldFilled(params.model))
+                characteristics.push({ label: 'Модель', value: params.model });
             if (isFieldFilled(params.condition)) {
                 characteristics.push({
                     label: 'Состояние',
                     value: params.condition === 'new' ? 'Новое' : 'Б/У',
                 });
             }
-            if (isFieldFilled(params.color)) characteristics.push({ label: 'Цвет', value: params.color });
+            if (isFieldFilled(params.color))
+                characteristics.push({ label: 'Цвет', value: params.color });
             break;
         case 'auto':
-            if (isFieldFilled(params.brand)) characteristics.push({ label: 'Бренд', value: params.brand });
-            if (isFieldFilled(params.model)) characteristics.push({ label: 'Модель', value: params.model });
+            if (isFieldFilled(params.brand))
+                characteristics.push({ label: 'Бренд', value: params.brand });
+            if (isFieldFilled(params.model))
+                characteristics.push({ label: 'Модель', value: params.model });
             if (isFieldFilled(params.yearOfManufacture)) {
                 characteristics.push({ label: 'Год выпуска', value: params.yearOfManufacture });
             }
@@ -71,17 +80,23 @@ const getCharacteristics = (ad: any) => {
             break;
         case 'real_estate':
             if (isFieldFilled(params.type)) {
-                const typeMap: Record<string, string> = { flat: 'Квартира', house: 'Дом', room: 'Комната' };
+                const typeMap: Record<string, string> = {
+                    flat: 'Квартира',
+                    house: 'Дом',
+                    room: 'Комната',
+                };
                 characteristics.push({
                     label: 'Тип',
                     value: typeMap[params.type] || params.type,
                 });
             }
-            if (isFieldFilled(params.address)) characteristics.push({ label: 'Адрес', value: params.address });
+            if (isFieldFilled(params.address))
+                characteristics.push({ label: 'Адрес', value: params.address });
             if (isFieldFilled(params.area)) {
                 characteristics.push({ label: 'Площадь', value: `${params.area} м²` });
             }
-            if (isFieldFilled(params.floor)) characteristics.push({ label: 'Этаж', value: params.floor });
+            if (isFieldFilled(params.floor))
+                characteristics.push({ label: 'Этаж', value: params.floor });
             break;
         default:
             break;
@@ -150,11 +165,11 @@ export const AdView = () => {
             }
 
             console.log('Загрузка объявления с ID:', id);
-            
+
             try {
                 const foundAd = await fetchAdById(Number(id));
                 console.log('Полученное объявление:', foundAd);
-                
+
                 if (foundAd) {
                     setAd(foundAd);
                 } else {
@@ -167,7 +182,7 @@ export const AdView = () => {
                 setLoading(false);
             }
         };
-        
+
         loadAd();
     }, [id, fetchAdById]);
 
@@ -409,8 +424,18 @@ export const AdView = () => {
                             label={getCategoryRussian(ad.category)}
                             sx={{
                                 width: 'fit-content',
-                                bgcolor: ad.category === 'electronics' ? '#e3f2fd' : ad.category === 'auto' ? '#e8f5e9' : '#fff3e0',
-                                color: ad.category === 'electronics' ? '#1976d2' : ad.category === 'auto' ? '#2e7d32' : '#ed6c02',
+                                bgcolor:
+                                    ad.category === 'electronics'
+                                        ? '#e3f2fd'
+                                        : ad.category === 'auto'
+                                          ? '#e8f5e9'
+                                          : '#fff3e0',
+                                color:
+                                    ad.category === 'electronics'
+                                        ? '#1976d2'
+                                        : ad.category === 'auto'
+                                          ? '#2e7d32'
+                                          : '#ed6c02',
                                 fontWeight: 'bold',
                             }}
                         />
