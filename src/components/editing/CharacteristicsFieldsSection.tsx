@@ -1,7 +1,21 @@
 import CancelOutlined from '@mui/icons-material/CancelOutlined';
 import EmojiObjectsOutlined from '@mui/icons-material/EmojiObjectsOutlined';
-import { Button, IconButton, InputAdornment, Stack, TextField, Typography } from '@mui/material';
-import type { JSX } from 'react';
+import {
+    Button,
+    IconButton,
+    InputAdornment,
+    Stack,
+    TextField,
+    Typography,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Box,
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import { useState, type JSX } from 'react';
+import { getMarketPriceFromAI } from '../../api/openrouter';
 
 interface CharacteristicsFieldsSectionProps {
     price: string;
@@ -18,95 +32,203 @@ export const CharacteristicsFieldsSection = ({
     params,
     setParams,
 }: CharacteristicsFieldsSectionProps): JSX.Element => {
+    const [tooltipOpen, setTooltipOpen] = useState(false);
+    const [aiResponse, setAiResponse] = useState('');
+    const [loading, setLoading] = useState(false);
+
     const handleClear = () => {
         setPrice('');
     };
 
-    const handleMarketPrice = () => {
-        // TODO: Интеграция с LLM для получения рыночной цены
-        alert('Функция получения рыночной цены будет доступна позже');
+    const handleMarketPrice = async () => {
+        setLoading(true);
+        setTooltipOpen(true);
+        setAiResponse('Запрос к AI...');
+        
+        try {
+            const result = await getMarketPriceFromAI('', category, Number(price));
+            if (result.success) {
+                setAiResponse(result.message);
+                // Если цена распарсилась, сохраняем ее в state для применения
+                if (result.price) {
+                    setAiResponse((prev) => prev + `\n\n[Распознанная цена: ${result.price} рублей]`);
+                }
+            } else {
+                setAiResponse(result.message);
+            }
+        } catch (error) {
+            setAiResponse('Ошибка получения данных. Попробуйте позже.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleApplyPrice = async () => {
+        // Повторно запрашиваем API для получения распарсенной цены
+        setLoading(true);
+        try {
+            const result = await getMarketPriceFromAI('', category, Number(price));
+            if (result.success && result.price) {
+                setPrice(result.price);
+            } else if (result.success) {
+                // Если не удалось распарсить, показываем сообщение
+                alert('Не удалось определить цену из ответа AI. Попробуйте еще раз.');
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+        } finally {
+            setLoading(false);
+            setTooltipOpen(false);
+        }
     };
 
     return (
-        <Stack spacing={1} width="100%">
-            {/* Label row with required asterisk */}
-            <Stack direction="row" spacing={0.5} alignItems="center">
-                <Typography
-                    component="span"
-                    sx={{
-                        color: 'error.main',
-                        fontSize: '14px',
-                        lineHeight: '22px',
-                        mt: '-1px',
-                    }}
-                >
-                    *
-                </Typography>
-                <Typography
-                    variant="body1"
-                    fontWeight={600}
-                    sx={{
-                        color: 'rgba(0,0,0,0.85)',
-                        fontSize: '14px',
-                        lineHeight: '22px',
-                    }}
-                >
-                    Цена
-                </Typography>
-            </Stack>
+        <>
+            <Stack spacing={1} width="100%">
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                    <Typography
+                        component="span"
+                        sx={{
+                            color: 'error.main',
+                            fontSize: '14px',
+                            lineHeight: '22px',
+                            mt: '-1px',
+                        }}
+                    >
+                        *
+                    </Typography>
+                    <Typography
+                        variant="body1"
+                        fontWeight={600}
+                        sx={{
+                            color: 'rgba(0,0,0,0.85)',
+                            fontSize: '14px',
+                            lineHeight: '22px',
+                        }}
+                    >
+                        Цена
+                    </Typography>
+                </Stack>
 
-            {/* Input row */}
-            <Stack direction="row" alignItems="center" spacing={3}>
-                {/* Price input field */}
-                <TextField
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    size="small"
-                    sx={{
-                        width: 456,
-                        '& .MuiOutlinedInput-root': {
+                <Stack direction="row" alignItems="center" spacing={3}>
+                    <TextField
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        size="small"
+                        sx={{
+                            width: 456,
+                            '& .MuiOutlinedInput-root': {
+                                borderRadius: '8px',
+                                backgroundColor: '#fff',
+                            },
+                        }}
+                        InputProps={{
+                            endAdornment: price ? (
+                                <InputAdornment position="end">
+                                    <IconButton size="small" onClick={handleClear} edge="end">
+                                        <CancelOutlined
+                                            sx={{ fontSize: 14, color: 'rgba(0,0,0,0.25)' }}
+                                        />
+                                    </IconButton>
+                                </InputAdornment>
+                            ) : null,
+                        }}
+                    />
+
+                    <Button
+                        variant="text"
+                        onClick={handleMarketPrice}
+                        startIcon={<EmojiObjectsOutlined sx={{ color: '#ffa940', fontSize: 14 }} />}
+                        sx={{
+                            backgroundColor: '#f9f1e6',
+                            color: '#ffa940',
                             borderRadius: '8px',
-                            backgroundColor: '#fff',
-                        },
-                    }}
-                    InputProps={{
-                        endAdornment: price ? (
-                            <InputAdornment position="end">
-                                <IconButton size="small" onClick={handleClear} edge="end">
-                                    <CancelOutlined
-                                        sx={{ fontSize: 14, color: 'rgba(0,0,0,0.25)' }}
-                                    />
-                                </IconButton>
-                            </InputAdornment>
-                        ) : null,
-                    }}
-                />
-
-                {/* Market price button */}
-                <Button
-                    variant="text"
-                    onClick={handleMarketPrice}
-                    startIcon={<EmojiObjectsOutlined sx={{ color: '#ffa940', fontSize: 14 }} />}
-                    sx={{
-                        backgroundColor: '#f9f1e6',
-                        color: '#ffa940',
-                        borderRadius: '8px',
-                        textTransform: 'none',
-                        fontSize: '14px',
-                        lineHeight: '22px',
-                        px: 1,
-                        py: 0,
-                        height: 32,
-                        whiteSpace: 'nowrap',
-                        '&:hover': {
-                            backgroundColor: '#f5e8d5',
-                        },
-                    }}
-                >
-                    Узнать рыночную цену
-                </Button>
+                            textTransform: 'none',
+                            fontSize: '14px',
+                            lineHeight: '22px',
+                            px: 1,
+                            py: 0,
+                            height: 32,
+                            whiteSpace: 'nowrap',
+                            '&:hover': {
+                                backgroundColor: '#f5e8d5',
+                            },
+                        }}
+                    >
+                        Узнать рыночную цену
+                    </Button>
+                </Stack>
             </Stack>
-        </Stack>
+
+            <Dialog
+                open={tooltipOpen}
+                onClose={() => setTooltipOpen(false)}
+                maxWidth="sm"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        borderRadius: 3,
+                        bgcolor: '#f9f1e6',
+                    },
+                }}
+            >
+                <DialogTitle sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    pb: 1,
+                }}>
+                    <Typography variant="h6" fontWeight="bold" color="#ed6c02">
+                        AI-помощник
+                    </Typography>
+                    <IconButton onClick={() => setTooltipOpen(false)} size="small">
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+                
+                <DialogContent>
+                    {loading ? (
+                        <Box sx={{ textAlign: 'center', py: 4 }}>
+                            <Typography>Загрузка рекомендации...</Typography>
+                        </Box>
+                    ) : (
+                        <Typography 
+                            variant="body1" 
+                            sx={{ 
+                                whiteSpace: 'pre-wrap', 
+                                lineHeight: 1.6,
+                                color: 'text.primary',
+                            }}
+                        >
+                            {aiResponse}
+                        </Typography>
+                    )}
+                </DialogContent>
+                
+                <DialogActions sx={{ p: 2, pt: 0 }}>
+                    <Button 
+                        onClick={() => setTooltipOpen(false)}
+                        sx={{
+                            color: '#848388',
+                            '&:hover': { bgcolor: '#f5e8d4' },
+                        }}
+                    >
+                        Закрыть
+                    </Button>
+                    <Button
+                        onClick={handleApplyPrice}
+                        variant="contained"
+                        disabled={loading}
+                        sx={{
+                            bgcolor: '#ed6c02',
+                            '&:hover': { bgcolor: '#ff9800' },
+                        }}
+                    >
+                        Применить
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </>
     );
 };
 
