@@ -16,7 +16,7 @@ const AdsList = () => {
     return (
         <Box
             component="main"
-            sx={{ backgroundColor: '#f7f5f8', width: '100%', minHeight: '100vh' }}
+            sx={{ backgroundColor: '#f7f5f8', width: '100% - 32px', minHeight: '100vh' }}
             px={4}
             py={1.5}
         >

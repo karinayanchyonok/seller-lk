@@ -42,7 +42,7 @@ export const ListingControlsSection = (): JSX.Element => {
                 alignItems: 'center',
                 gap: 3,
                 p: 1.5,
-                width: '100%',
+                width: '100% - 32px',
                 borderRadius: 2,
                 overflow: 'hidden',
                 backgroundColor: '#fff',

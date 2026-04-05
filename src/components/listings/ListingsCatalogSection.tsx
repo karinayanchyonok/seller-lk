@@ -10,22 +10,30 @@ import {
     Paper,
     Chip,
     Button,
-    IconButton,
-    Card,
-    CardContent,
-    CardMedia,
     Pagination,
 } from '@mui/material';
-import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import { useAdsStore } from '../../store/useAdsStore';
 import { useNavigate } from 'react-router-dom';
 
 const categories = ['Авто', 'Электроника', 'Недвижимость'];
 
+// Функция для преобразования категории из API в русский язык
+export const translateCategory = (category: string): string => {
+    const categoryMap: Record<string, string> = {
+        'auto': 'Авто',
+        'electronics': 'Электроника',
+        'real_estate': 'Недвижимость',
+        // Если вдруг приходят уже русские названия
+        'Авто': 'Авто',
+        'Электроника': 'Электроника',
+        'Недвижимость': 'Недвижимость',
+    };
+    return categoryMap[category] || category;
+};
 
-
-// Компонент карточки в виде списка (горизонтальной)
+// Компонент карточки в виде списка (горизонтальной) - НОВЫЙ ДИЗАЙН
 const ListCard = ({ ad }: { ad: any }) => {
     const navigate = useNavigate();
     const handleClick = () => {
@@ -36,74 +44,90 @@ const ListCard = ({ ad }: { ad: any }) => {
         return new Intl.NumberFormat('ru-RU').format(price) + ' ₽';
     };
 
-    const getCategoryColor = () => {
-        switch (ad.category) {
-            case 'Авто':
-                return '#4caf50';
-            case 'Электроника':
-                return '#2196f3';
-            case 'Недвижимость':
-                return '#ff9800';
-            default:
-                return '#9e9e9e';
-        }
-    };
+    const categoryRussian = translateCategory(ad.category);
 
     return (
-        <Card
-            sx={{ display: 'flex', cursor: 'pointer', '&:hover': { boxShadow: 3 } }}
+        <Paper
+            elevation={0}
             onClick={handleClick}
+            sx={{
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: '#e0e0e0',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'stretch',
+                cursor: 'pointer',
+                '&:hover': {
+                    boxShadow: 2,
+                },
+            }}
         >
-            <CardMedia
-                component="div"
+            {/* Image placeholder */}
+            <Box
                 sx={{
-                    width: 120,
-                    height: 120,
-                    bgcolor: '#f5f5f5',
+                    width: 179,
+                    minHeight: 132,
+                    flexShrink: 0,
+                    bgcolor: '#fafafa',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: 40,
                 }}
             >
-                📦
-            </CardMedia>
-            <CardContent
-                sx={{
-                    flex: 1,
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                }}
-            >
-                <Box>
-                    <Typography
-                        variant="caption"
-                        sx={{
-                            color: getCategoryColor(),
-                            fontWeight: 'bold',
-                            textTransform: 'uppercase',
-                        }}
-                    >
-                        {ad.category}
-                    </Typography>
-                    <Typography variant="h6" component="h3" gutterBottom>
-                        {ad.title}
-                    </Typography>
-                    <Typography variant="h6" color="primary" fontWeight="bold">
-                        {formatPrice(ad.price)}
-                    </Typography>
-                </Box>
+                <ImageOutlinedIcon sx={{ fontSize: 48, color: '#bdbdbd' }} />
+            </Box>
+
+            {/* Card content */}
+            <Stack spacing={0.5} sx={{ pl: 3, pr: 2, py: 2, flex: 1, minWidth: 0 }}>
+                <Typography
+                    variant="body2"
+                    sx={{
+                        color: '#848388',
+                        fontFamily: 'Inter, Helvetica',
+                        fontWeight: 400,
+                    }}
+                >
+                    {categoryRussian}
+                </Typography>
+                <Typography variant="h6" fontWeight={400} color="text.primary" noWrap>
+                    {ad.title}
+                </Typography>
+                <Typography variant="body1" fontWeight={600} color="text.secondary" noWrap>
+                    {formatPrice(ad.price)}
+                </Typography>
+
+                {/* "Needs work" badge */}
                 {ad.needsRevision && (
-                    <Chip
-                        label="Требует доработок"
-                        color="warning"
-                        size="small"
-                        sx={{ fontWeight: 'bold' }}
-                    />
+                    <Box sx={{ mt: 0.5 }}>
+                        <Chip
+                            icon={
+                                <FiberManualRecordIcon
+                                    sx={{
+                                        fontSize: 8,
+                                        color: '#faad14 !important',
+                                    }}
+                                />
+                            }
+                            label="Требует доработок"
+                            size="small"
+                            sx={{
+                                bgcolor: '#f9f1e6',
+                                color: '#faad14',
+                                fontWeight: 400,
+                                fontSize: 14,
+                                borderRadius: 2,
+                                height: 'auto',
+                                py: 0.25,
+                                '& .MuiChip-label': { px: 0.5 },
+                                '& .MuiChip-icon': { ml: 0.5 },
+                            }}
+                        />
+                    </Box>
                 )}
-            </CardContent>
-        </Card>
+            </Stack>
+        </Paper>
     );
 };
 
@@ -118,12 +142,14 @@ const GridCard = ({ ad }: { ad: any }) => {
         return new Intl.NumberFormat('ru-RU').format(price) + ' ₽';
     };
 
+    const categoryRussian = translateCategory(ad.category);
+
     return (
         <Paper
             elevation={0}
             onClick={handleClick}
             sx={{
-                width: 185,
+                width: 200,
                 minHeight: 268,
                 borderRadius: 3,
                 border: '1px solid #e8e8e8',
@@ -147,7 +173,7 @@ const GridCard = ({ ad }: { ad: any }) => {
             >
                 <ImageOutlinedIcon sx={{ fontSize: 48, color: '#bdbdbd' }} />
                 <Chip
-                    label={ad.category}
+                    label={categoryRussian}
                     size="small"
                     sx={{
                         position: 'absolute',
@@ -197,7 +223,6 @@ export const ListingsCatalogSection = (): JSX.Element => {
         selectedCategories,
         onlyNeedsRevision,
         currentPage,
-        itemsPerPage,
         viewMode,
         toggleCategory,
         setOnlyNeedsRevision,
@@ -300,23 +325,25 @@ export const ListingsCatalogSection = (): JSX.Element => {
                     <Paper sx={{ p: 4, textAlign: 'center' }}>
                         <Typography color="text.secondary">Объявления не найдены</Typography>
                     </Paper>
-                ) : (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-                        {paginatedAds.map((ad) =>
-                            viewMode === 'grid' ? (
-                                <GridCard key={ad.id} ad={ad} />
-                            ) : (
-                                <Box key={ad.id} sx={{ width: '100%' }}>
-                                    <ListCard ad={ad} />
-                                </Box>
-                            )
-                        )}
+                ) : viewMode === 'grid' ? (
+                    // Сетка: карточки в ряд
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '18px' }}>
+                        {paginatedAds.map((ad) => (
+                            <GridCard key={ad.id} ad={ad} />
+                        ))}
                     </Box>
+                ) : (
+                    // Список: карточки вертикально, каждая на всю ширину
+                    <Stack spacing={1.5}>
+                        {paginatedAds.map((ad) => (
+                            <ListCard key={ad.id} ad={ad} />
+                        ))}
+                    </Stack>
                 )}
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                    <Box sx={{ py: 2, display: 'flex', justifyContent: 'center', mt: 2 }}>
                         <Pagination
                             count={totalPages}
                             page={currentPage}

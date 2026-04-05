@@ -1,0 +1,296 @@
+import React, { useState } from 'react';
+import {
+    Box,
+    Stack,
+    Typography,
+    Checkbox,
+    FormControlLabel,
+    Switch,
+    Divider,
+    Paper,
+    Button,
+    Chip,
+    Pagination,
+    PaginationItem,
+} from '@mui/material';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import NavigateBefore from '@mui/icons-material/NavigateBefore';
+import NavigateNext from '@mui/icons-material/NavigateNext';
+import ImageOutlined from '@mui/icons-material/ImageOutlined';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+
+const categories = ['Авто', 'Электроника', 'Недвижимость'];
+
+const listings = [
+    {
+        id: 1,
+        category: 'Электроника',
+        title: 'Наушники',
+        price: '2990 ₽',
+        needsWork: false,
+    },
+    {
+        id: 2,
+        category: 'Авто',
+        title: 'Volkswagen Polo',
+        price: '1100000 ₽',
+        needsWork: true,
+    },
+    {
+        id: 3,
+        category: 'Недвижимость',
+        title: 'Студия, 25м²',
+        price: '15000000 ₽',
+        needsWork: false,
+    },
+    {
+        id: 4,
+        category: 'Недвижимость',
+        title: '1-кк, 44м²',
+        price: '19000000 ₽',
+        needsWork: true,
+    },
+];
+
+export const ListingsContentSection = (): JSX.Element => {
+    const [checkedCategories, setCheckedCategories] = useState<string[]>([]);
+    const [onlyNeedsWork, setOnlyNeedsWork] = useState(false);
+    const [page, setPage] = useState(1);
+
+    const handleCategoryChange = (category: string) => {
+        setCheckedCategories((prev) =>
+            prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]
+        );
+    };
+
+    const handleReset = () => {
+        setCheckedCategories([]);
+        setOnlyNeedsWork(false);
+    };
+
+    return (
+        <Stack direction="row" spacing={3} alignItems="flex-start" width="100%">
+            {/* Sidebar filters */}
+            <Stack spacing={1.25} sx={{ flexShrink: 0, width: 256 }}>
+                <Paper elevation={0} sx={{ borderRadius: 2, p: 2, overflow: 'hidden' }}>
+                    <Stack spacing={1.25}>
+                        {/* Title */}
+                        <Typography variant="h6" fontWeight={500} color="text.primary">
+                            Фильтры
+                        </Typography>
+                        {/* Category filter */}
+                        <Box>
+                            {/* Category header */}
+                            <Stack
+                                direction="row"
+                                alignItems="center"
+                                justifyContent="space-between"
+                                sx={{ mb: 1 }}
+                            >
+                                <Typography variant="body1" color="text.primary">
+                                    Категория
+                                </Typography>
+                                <ExpandLess
+                                    sx={{ width: 12, height: 12, color: 'text.secondary' }}
+                                />
+                            </Stack>
+                            {/* Checkboxes */}
+                            <Stack spacing={0.5} sx={{ pl: 0 }}>
+                                {categories.map((cat) => (
+                                    <FormControlLabel
+                                        key={cat}
+                                        control={
+                                            <Checkbox
+                                                size="small"
+                                                checked={checkedCategories.includes(cat)}
+                                                onChange={() => handleCategoryChange(cat)}
+                                                sx={{ p: 0.5 }}
+                                            />
+                                        }
+                                        label={
+                                            <Typography variant="body2" color="text.primary">
+                                                {cat}
+                                            </Typography>
+                                        }
+                                        sx={{ ml: 0, gap: 0.5 }}
+                                    />
+                                ))}
+                            </Stack>
+                        </Box>
+                        <Divider sx={{ borderColor: '#f0f0f0' }} />
+                        {/* Toggle: only needs work */}
+                        <Stack direction="row" alignItems="center" justifyContent="space-between">
+                            <Typography
+                                variant="body2"
+                                fontWeight={600}
+                                color="text.primary"
+                                sx={{ maxWidth: 160, lineHeight: 1.4 }}
+                            >
+                                Только требующие доработок
+                            </Typography>
+                            <Switch
+                                size="small"
+                                checked={onlyNeedsWork}
+                                onChange={(e) => setOnlyNeedsWork(e.target.checked)}
+                            />
+                        </Stack>
+                    </Stack>
+                </Paper>
+                {/* Reset filters button */}
+                <Paper elevation={0} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                    <Button
+                        fullWidth
+                        onClick={handleReset}
+                        sx={{
+                            py: 1.5,
+                            color: '#848388',
+                            fontFamily: 'Inter, Helvetica',
+                            fontWeight: 400,
+                            fontSize: 14,
+                            textTransform: 'none',
+                        }}
+                    >
+                        Сбросить фильтры
+                    </Button>
+                </Paper>
+            </Stack>
+            {/* Listings content */}
+            <Stack spacing={1.25} flex={1} minWidth={0}>
+                {/* Listing cards */}
+                <Stack spacing={1.5}>
+                    {listings.map((item) => (
+                        <Paper
+                            key={item.id}
+                            elevation={0}
+                            sx={{
+                                borderRadius: 3,
+                                border: '1px solid',
+                                borderColor: 'grey.300',
+                                overflow: 'hidden',
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'stretch',
+                            }}
+                        >
+                            {/* Image placeholder */}
+                            <Box
+                                sx={{
+                                    width: 179,
+                                    minHeight: 132,
+                                    flexShrink: 0,
+                                    bgcolor: '#fafafa',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: 1,
+                                }}
+                            >
+                                <ImageOutlined sx={{ fontSize: 48, color: 'grey.400' }} />
+                            </Box>
+                            {/* Card content */}
+                            <Stack spacing={0.5} sx={{ pl: 3, pr: 2, py: 2, flex: 1, minWidth: 0 }}>
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        color: '#848388',
+                                        fontFamily: 'Inter, Helvetica',
+                                        fontWeight: 400,
+                                    }}
+                                >
+                                    {item.category}
+                                </Typography>
+                                <Typography
+                                    variant="h6"
+                                    fontWeight={400}
+                                    color="text.primary"
+                                    noWrap
+                                >
+                                    {item.title}
+                                </Typography>
+                                <Typography
+                                    variant="body1"
+                                    fontWeight={600}
+                                    color="text.secondary"
+                                    noWrap
+                                >
+                                    {item.price}
+                                </Typography>
+                                {/* "Needs work" badge */}
+                                {item.needsWork && (
+                                    <Box sx={{ mt: 0.5 }}>
+                                        <Chip
+                                            icon={
+                                                <FiberManualRecordIcon
+                                                    sx={{
+                                                        fontSize: 8,
+                                                        color: '#faad14 !important',
+                                                    }}
+                                                />
+                                            }
+                                            label="Требует доработок"
+                                            size="small"
+                                            sx={{
+                                                bgcolor: '#f9f1e6',
+                                                color: '#faad14',
+                                                fontWeight: 400,
+                                                fontSize: 14,
+                                                borderRadius: 2,
+                                                height: 'auto',
+                                                py: 0.25,
+                                                '& .MuiChip-label': { px: 0.5 },
+                                                '& .MuiChip-icon': { ml: 0.5 },
+                                            }}
+                                        />
+                                    </Box>
+                                )}
+                            </Stack>
+                        </Paper>
+                    ))}
+                </Stack>
+                {/* Pagination */}
+                <Box>
+                    <Pagination
+                        count={5}
+                        page={page}
+                        onChange={(_, value) => setPage(value)}
+                        renderItem={(item) => (
+                            <PaginationItem
+                                slots={{
+                                    previous: NavigateBefore,
+                                    next: NavigateNext,
+                                }}
+                                {...item}
+                                sx={{
+                                    borderRadius: 1,
+                                    border: '1px solid',
+                                    borderColor: item.selected ? 'primary.main' : 'grey.300',
+                                    color: item.selected ? 'primary.main' : 'text.primary',
+                                    fontWeight: item.selected ? 500 : 400,
+                                    minWidth: 32,
+                                    height: 32,
+                                    bgcolor: 'background.paper',
+                                    '&.Mui-selected': {
+                                        bgcolor: 'background.paper',
+                                        borderColor: 'primary.main',
+                                        color: 'primary.main',
+                                        '&:hover': {
+                                            bgcolor: 'background.paper',
+                                        },
+                                    },
+                                }}
+                            />
+                        )}
+                        sx={{
+                            '& .MuiPagination-ul': {
+                                gap: 0.5,
+                                flexWrap: 'nowrap',
+                            },
+                        }}
+                    />
+                </Box>
+            </Stack>
+        </Stack>
+    );
+};
+
+export default ListingsContentSection;

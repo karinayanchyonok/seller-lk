@@ -5,57 +5,62 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Box, Button, Divider, Paper, Stack, Typography, IconButton, Chip } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAdsStore } from '../store/useAdsStore';
+import { translateCategory } from '../components/listings/ListingsCatalogSection';
 
 // Компонент для отображения характеристик в зависимости от категории
 const getCharacteristics = (ad: any) => {
     const characteristics = [];
+    const params = ad.params || {};
 
     switch (ad.category) {
-        case 'Электроника':
-            if (ad.params?.type) characteristics.push({ label: 'Тип', value: ad.params.type });
-            if (ad.params?.brand) characteristics.push({ label: 'Бренд', value: ad.params.brand });
-            if (ad.params?.model) characteristics.push({ label: 'Модель', value: ad.params.model });
-            if (ad.params?.condition)
+        case 'electronics':
+            if (params.type) {
+                const typeMap: Record<string, string> = { phone: 'Телефон', laptop: 'Ноутбук', misc: 'Другое' };
+                characteristics.push({ label: 'Тип', value: typeMap[params.type] || params.type });
+            }
+            if (params.brand) characteristics.push({ label: 'Бренд', value: params.brand });
+            if (params.model) characteristics.push({ label: 'Модель', value: params.model });
+            if (params.condition) {
                 characteristics.push({
                     label: 'Состояние',
-                    value: ad.params.condition === 'new' ? 'Новое' : 'Б/У',
+                    value: params.condition === 'new' ? 'Новое' : 'Б/У',
                 });
-            if (ad.params?.color) characteristics.push({ label: 'Цвет', value: ad.params.color });
+            }
+            if (params.color) characteristics.push({ label: 'Цвет', value: params.color });
             break;
-        case 'Авто':
-            if (ad.params?.brand) characteristics.push({ label: 'Бренд', value: ad.params.brand });
-            if (ad.params?.model) characteristics.push({ label: 'Модель', value: ad.params.model });
-            if (ad.params?.yearOfManufacture)
-                characteristics.push({ label: 'Год выпуска', value: ad.params.yearOfManufacture });
-            if (ad.params?.transmission)
+        case 'auto':
+            if (params.brand) characteristics.push({ label: 'Бренд', value: params.brand });
+            if (params.model) characteristics.push({ label: 'Модель', value: params.model });
+            if (params.yearOfManufacture) {
+                characteristics.push({ label: 'Год выпуска', value: params.yearOfManufacture });
+            }
+            if (params.transmission) {
                 characteristics.push({
                     label: 'Коробка передач',
-                    value: ad.params.transmission === 'automatic' ? 'Автомат' : 'Механика',
+                    value: params.transmission === 'automatic' ? 'Автомат' : 'Механика',
                 });
-            if (ad.params?.mileage)
-                characteristics.push({ label: 'Пробег', value: `${ad.params.mileage} км` });
-            if (ad.params?.enginePower)
+            }
+            if (params.mileage) {
+                characteristics.push({ label: 'Пробег', value: `${params.mileage} км` });
+            }
+            if (params.enginePower) {
                 characteristics.push({
                     label: 'Мощность двигателя',
-                    value: `${ad.params.enginePower} л.с.`,
+                    value: `${params.enginePower} л.с.`,
                 });
+            }
             break;
-        case 'Недвижимость':
-            if (ad.params?.type)
+        case 'real_estate':
+            if (params.type) {
+                const typeMap: Record<string, string> = { flat: 'Квартира', house: 'Дом', room: 'Комната' };
                 characteristics.push({
                     label: 'Тип',
-                    value:
-                        ad.params.type === 'flat'
-                            ? 'Квартира'
-                            : ad.params.type === 'house'
-                              ? 'Дом'
-                              : 'Комната',
+                    value: typeMap[params.type] || params.type,
                 });
-            if (ad.params?.address)
-                characteristics.push({ label: 'Адрес', value: ad.params.address });
-            if (ad.params?.area)
-                characteristics.push({ label: 'Площадь', value: `${ad.params.area} м²` });
-            if (ad.params?.floor) characteristics.push({ label: 'Этаж', value: ad.params.floor });
+            }
+            if (params.address) characteristics.push({ label: 'Адрес', value: params.address });
+            if (params.area) characteristics.push({ label: 'Площадь', value: `${params.area} м²` });
+            if (params.floor) characteristics.push({ label: 'Этаж', value: params.floor });
             break;
         default:
             break;
@@ -67,34 +72,48 @@ const getCharacteristics = (ad: any) => {
 // Функция для определения незаполненных полей
 const getMissingFields = (ad: any) => {
     const missing = [];
+    const params = ad.params || {};
 
+    // Проверка описания
     if (!ad.description || ad.description.trim() === '') {
         missing.push('Описание');
     }
 
+    // Проверка полей в зависимости от категории
     switch (ad.category) {
-        case 'Электроника':
-            if (!ad.params?.brand) missing.push('Бренд');
-            if (!ad.params?.model) missing.push('Модель');
-            if (!ad.params?.condition) missing.push('Состояние');
-            if (!ad.params?.color) missing.push('Цвет');
+        case 'electronics':
+            if (!params.type) missing.push('Тип');
+            if (!params.brand) missing.push('Бренд');
+            if (!params.model) missing.push('Модель');
+            if (!params.condition) missing.push('Состояние');
+            if (!params.color) missing.push('Цвет');
             break;
-        case 'Авто':
-            if (!ad.params?.brand) missing.push('Бренд');
-            if (!ad.params?.model) missing.push('Модель');
-            if (!ad.params?.yearOfManufacture) missing.push('Год выпуска');
-            if (!ad.params?.transmission) missing.push('Коробка передач');
-            if (!ad.params?.mileage) missing.push('Пробег');
+        case 'auto':
+            if (!params.brand) missing.push('Бренд');
+            if (!params.model) missing.push('Модель');
+            if (!params.yearOfManufacture) missing.push('Год выпуска');
+            if (!params.transmission) missing.push('Коробка передач');
+            if (!params.mileage) missing.push('Пробег');
             break;
-        case 'Недвижимость':
-            if (!ad.params?.type) missing.push('Тип недвижимости');
-            if (!ad.params?.area) missing.push('Площадь');
+        case 'real_estate':
+            if (!params.type) missing.push('Тип недвижимости');
+            if (!params.area) missing.push('Площадь');
             break;
         default:
             break;
     }
 
     return missing;
+};
+
+// Функция для преобразования категории в русский язык для отображения
+const getCategoryRussian = (category: string): string => {
+    const categoryMap: Record<string, string> = {
+        'auto': 'Авто',
+        'electronics': 'Электроника',
+        'real_estate': 'Недвижимость',
+    };
+    return categoryMap[category] || category;
 };
 
 export const AdView = () => {
@@ -133,7 +152,7 @@ export const AdView = () => {
     };
 
     return (
-        <Box sx={{ maxWidth: 1399, mx: 'auto', width: '100%' }}>
+        <Box sx={{ maxWidth: 1399, mx: 'auto', width: '100%', px: 2 }}>
             {/* Кнопка назад */}
             <Button
                 startIcon={<ArrowBackIcon />}
@@ -282,10 +301,10 @@ export const AdView = () => {
                                     >
                                         У объявления не заполнены поля:
                                         <br />
-                                        {missingFields.map((field) => (
+                                        {missingFields.map((field, index) => (
                                             <span key={field}>
                                                 • {field}
-                                                <br />
+                                                {index < missingFields.length - 1 && <br />}
                                             </span>
                                         ))}
                                     </Typography>
@@ -329,21 +348,11 @@ export const AdView = () => {
 
                         {/* Бейдж категории */}
                         <Chip
-                            label={ad.category}
+                            label={getCategoryRussian(ad.category)}
                             sx={{
                                 width: 'fit-content',
-                                bgcolor:
-                                    ad.category === 'Электроника'
-                                        ? '#e3f2fd'
-                                        : ad.category === 'Авто'
-                                          ? '#e8f5e9'
-                                          : '#fff3e0',
-                                color:
-                                    ad.category === 'Электроника'
-                                        ? '#1976d2'
-                                        : ad.category === 'Авто'
-                                          ? '#2e7d32'
-                                          : '#ed6c02',
+                                bgcolor: ad.category === 'electronics' ? '#e3f2fd' : ad.category === 'auto' ? '#e8f5e9' : '#fff3e0',
+                                color: ad.category === 'electronics' ? '#1976d2' : ad.category === 'auto' ? '#2e7d32' : '#ed6c02',
                                 fontWeight: 'bold',
                             }}
                         />
