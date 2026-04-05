@@ -2,10 +2,29 @@ import EditIcon from '@mui/icons-material/Edit';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { Box, Button, Divider, Paper, Stack, Typography, IconButton, Chip } from '@mui/material';
+import { Box, Button, Divider, Paper, Stack, Typography, Chip } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAdsStore } from '../store/useAdsStore';
-import { translateCategory } from '../components/listings/ListingsCatalogSection';
+import { useEffect, useState, useRef } from 'react';
+
+// Функция для преобразования категории в русский язык
+const getCategoryRussian = (category: string): string => {
+    const categoryMap: Record<string, string> = {
+        'auto': 'Авто',
+        'electronics': 'Электроника',
+        'real_estate': 'Недвижимость',
+    };
+    return categoryMap[category] || category;
+};
+
+// Функция для проверки, заполнено ли поле
+const isFieldFilled = (value: any): boolean => {
+    if (value === undefined || value === null) return false;
+    if (typeof value === 'string') return value.trim() !== '';
+    if (typeof value === 'number') return value !== 0 && !isNaN(value);
+    if (typeof value === 'boolean') return true;
+    return !!value;
+};
 
 // Компонент для отображения характеристик в зависимости от категории
 const getCharacteristics = (ad: any) => {
@@ -14,36 +33,36 @@ const getCharacteristics = (ad: any) => {
 
     switch (ad.category) {
         case 'electronics':
-            if (params.type) {
+            if (isFieldFilled(params.type)) {
                 const typeMap: Record<string, string> = { phone: 'Телефон', laptop: 'Ноутбук', misc: 'Другое' };
                 characteristics.push({ label: 'Тип', value: typeMap[params.type] || params.type });
             }
-            if (params.brand) characteristics.push({ label: 'Бренд', value: params.brand });
-            if (params.model) characteristics.push({ label: 'Модель', value: params.model });
-            if (params.condition) {
+            if (isFieldFilled(params.brand)) characteristics.push({ label: 'Бренд', value: params.brand });
+            if (isFieldFilled(params.model)) characteristics.push({ label: 'Модель', value: params.model });
+            if (isFieldFilled(params.condition)) {
                 characteristics.push({
                     label: 'Состояние',
                     value: params.condition === 'new' ? 'Новое' : 'Б/У',
                 });
             }
-            if (params.color) characteristics.push({ label: 'Цвет', value: params.color });
+            if (isFieldFilled(params.color)) characteristics.push({ label: 'Цвет', value: params.color });
             break;
         case 'auto':
-            if (params.brand) characteristics.push({ label: 'Бренд', value: params.brand });
-            if (params.model) characteristics.push({ label: 'Модель', value: params.model });
-            if (params.yearOfManufacture) {
+            if (isFieldFilled(params.brand)) characteristics.push({ label: 'Бренд', value: params.brand });
+            if (isFieldFilled(params.model)) characteristics.push({ label: 'Модель', value: params.model });
+            if (isFieldFilled(params.yearOfManufacture)) {
                 characteristics.push({ label: 'Год выпуска', value: params.yearOfManufacture });
             }
-            if (params.transmission) {
+            if (isFieldFilled(params.transmission)) {
                 characteristics.push({
                     label: 'Коробка передач',
                     value: params.transmission === 'automatic' ? 'Автомат' : 'Механика',
                 });
             }
-            if (params.mileage) {
+            if (isFieldFilled(params.mileage)) {
                 characteristics.push({ label: 'Пробег', value: `${params.mileage} км` });
             }
-            if (params.enginePower) {
+            if (isFieldFilled(params.enginePower)) {
                 characteristics.push({
                     label: 'Мощность двигателя',
                     value: `${params.enginePower} л.с.`,
@@ -51,16 +70,18 @@ const getCharacteristics = (ad: any) => {
             }
             break;
         case 'real_estate':
-            if (params.type) {
+            if (isFieldFilled(params.type)) {
                 const typeMap: Record<string, string> = { flat: 'Квартира', house: 'Дом', room: 'Комната' };
                 characteristics.push({
                     label: 'Тип',
                     value: typeMap[params.type] || params.type,
                 });
             }
-            if (params.address) characteristics.push({ label: 'Адрес', value: params.address });
-            if (params.area) characteristics.push({ label: 'Площадь', value: `${params.area} м²` });
-            if (params.floor) characteristics.push({ label: 'Этаж', value: params.floor });
+            if (isFieldFilled(params.address)) characteristics.push({ label: 'Адрес', value: params.address });
+            if (isFieldFilled(params.area)) {
+                characteristics.push({ label: 'Площадь', value: `${params.area} м²` });
+            }
+            if (isFieldFilled(params.floor)) characteristics.push({ label: 'Этаж', value: params.floor });
             break;
         default:
             break;
@@ -75,29 +96,30 @@ const getMissingFields = (ad: any) => {
     const params = ad.params || {};
 
     // Проверка описания
-    if (!ad.description || ad.description.trim() === '') {
+    if (!isFieldFilled(ad.description)) {
         missing.push('Описание');
     }
 
     // Проверка полей в зависимости от категории
     switch (ad.category) {
         case 'electronics':
-            if (!params.type) missing.push('Тип');
-            if (!params.brand) missing.push('Бренд');
-            if (!params.model) missing.push('Модель');
-            if (!params.condition) missing.push('Состояние');
-            if (!params.color) missing.push('Цвет');
+            if (!isFieldFilled(params.type)) missing.push('Тип');
+            if (!isFieldFilled(params.brand)) missing.push('Бренд');
+            if (!isFieldFilled(params.model)) missing.push('Модель');
+            if (!isFieldFilled(params.condition)) missing.push('Состояние');
+            if (!isFieldFilled(params.color)) missing.push('Цвет');
             break;
         case 'auto':
-            if (!params.brand) missing.push('Бренд');
-            if (!params.model) missing.push('Модель');
-            if (!params.yearOfManufacture) missing.push('Год выпуска');
-            if (!params.transmission) missing.push('Коробка передач');
-            if (!params.mileage) missing.push('Пробег');
+            if (!isFieldFilled(params.brand)) missing.push('Бренд');
+            if (!isFieldFilled(params.model)) missing.push('Модель');
+            if (!isFieldFilled(params.yearOfManufacture)) missing.push('Год выпуска');
+            if (!isFieldFilled(params.transmission)) missing.push('Коробка передач');
+            if (!isFieldFilled(params.mileage)) missing.push('Пробег');
+            if (!isFieldFilled(params.enginePower)) missing.push('Мощность двигателя');
             break;
         case 'real_estate':
-            if (!params.type) missing.push('Тип недвижимости');
-            if (!params.area) missing.push('Площадь');
+            if (!isFieldFilled(params.type)) missing.push('Тип недвижимости');
+            if (!isFieldFilled(params.area)) missing.push('Площадь');
             break;
         default:
             break;
@@ -106,27 +128,63 @@ const getMissingFields = (ad: any) => {
     return missing;
 };
 
-// Функция для преобразования категории в русский язык для отображения
-const getCategoryRussian = (category: string): string => {
-    const categoryMap: Record<string, string> = {
-        'auto': 'Авто',
-        'electronics': 'Электроника',
-        'real_estate': 'Недвижимость',
-    };
-    return categoryMap[category] || category;
-};
-
 export const AdView = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { allAds } = useAdsStore();
+    const { fetchAdById } = useAdsStore();
+    const [ad, setAd] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const hasLoaded = useRef(false); // Предотвращаем многократную загрузку
 
-    const ad = allAds.find((item) => item.id === Number(id));
+    useEffect(() => {
+        // Если уже загружали, не загружаем снова
+        if (hasLoaded.current) return;
+        hasLoaded.current = true;
 
-    if (!ad) {
+        const loadAd = async () => {
+            if (!id) {
+                setError('ID объявления не указан');
+                setLoading(false);
+                return;
+            }
+
+            console.log('Загрузка объявления с ID:', id);
+            
+            try {
+                const foundAd = await fetchAdById(Number(id));
+                console.log('Полученное объявление:', foundAd);
+                
+                if (foundAd) {
+                    setAd(foundAd);
+                } else {
+                    setError('Объявление не найдено');
+                }
+            } catch (err) {
+                console.error('Ошибка загрузки:', err);
+                setError('Ошибка загрузки объявления');
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        loadAd();
+    }, [id, fetchAdById]);
+
+    if (loading) {
+        return (
+            <Box sx={{ p: 4, textAlign: 'center' }}>
+                <Typography>Загрузка...</Typography>
+            </Box>
+        );
+    }
+
+    if (error || !ad) {
         return (
             <Paper elevation={0} sx={{ borderRadius: 4, p: 4, textAlign: 'center' }}>
-                <Typography variant="h5">Объявление не найдено</Typography>
+                <Typography variant="h5" color="error">
+                    {error || 'Объявление не найдено'}
+                </Typography>
                 <Button variant="contained" onClick={() => navigate('/ads')} sx={{ mt: 2 }}>
                     Вернуться к списку
                 </Button>

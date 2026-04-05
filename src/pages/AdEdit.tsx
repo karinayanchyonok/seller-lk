@@ -6,13 +6,14 @@ import { DescriptionFieldSection } from '../components/editing/DescriptionFieldS
 import { FormActionsSection } from '../components/editing/FormActionsSection';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAdsStore } from '../store/useAdsStore';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 
 const AdEdit = () => {
     const navigate = useNavigate();
     const { id } = useParams();
     const { fetchAdById, updateAd } = useAdsStore();
     const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     // Состояние формы
@@ -22,41 +23,38 @@ const AdEdit = () => {
     const [description, setDescription] = useState('');
     const [params, setParams] = useState({});
 
-    // Используем useCallback чтобы функция не пересоздавалась
-    const loadAd = useCallback(async () => {
-        if (!id) return;
-        
-        console.log('Загрузка объявления с id:', id);
-        setLoading(true);
-        setError(null);
-        
-        try {
-            const ad = await fetchAdById(Number(id));
-            console.log('Получено объявление:', ad);
-            
-            if (ad) {
-                setCategory(ad.category);
-                setTitle(ad.title);
-                setPrice(String(ad.price));
-                setDescription(ad.description || '');
-                setParams(ad.params || {});
-            } else {
-                setError('Объявление не найдено');
+    useEffect(() => {
+        const loadAd = async () => {
+            if (!id) return;
+            setLoading(true);
+            try {
+                const ad = await fetchAdById(Number(id));
+                console.log('Получено объявление:', ad);
+
+                if (ad) {
+                    setCategory(ad.category);
+                    setTitle(ad.title);
+                    setPrice(String(ad.price));
+                    setDescription(ad.description || '');
+                    setParams(ad.params || {});
+                } else {
+                    setError('Объявление не найдено');
+                }
+            } catch (err) {
+                console.error('Ошибка:', err);
+                setError('Ошибка загрузки объявления');
+            } finally {
+                setLoading(false);
             }
-        } catch (err) {
-            console.error('Ошибка:', err);
-            setError('Ошибка загрузки объявления. Убедитесь, что сервер запущен на порту 8081');
-        } finally {
-            setLoading(false);
-        }
+        };
+
+        loadAd();
     }, [id, fetchAdById]);
 
-    useEffect(() => {
-        loadAd();
-    }, [loadAd]);
-
     const handleSave = async () => {
-        if (!id) return;
+        if (!id || saving) return;
+
+        setSaving(true);
 
         const updateData = {
             category: category as 'auto' | 'electronics' | 'real_estate',
@@ -66,17 +64,24 @@ const AdEdit = () => {
             params,
         };
 
+        console.log('Сохранение:', updateData);
+
         try {
+            // Сохраняем
             await updateAd(Number(id), updateData);
+            console.log('Сохранено успешно');
+
+            // Просто переходим назад
             navigate(`/ads/${id}`);
         } catch (err) {
-            console.error('Ошибка сохранения:', err);
+            console.error('Ошибка:', err);
             alert('Ошибка сохранения');
+            setSaving(false);
         }
     };
 
     const handleCancel = () => {
-        navigate(-1);
+        navigate(`/ads/${id}`);
     };
 
     if (loading) {
@@ -92,10 +97,6 @@ const AdEdit = () => {
             <Box sx={{ p: 4, textAlign: 'center' }}>
                 <Typography color="error" sx={{ mb: 2 }}>
                     {error}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    Проверьте, что сервер запущен: <br />
-                    <code>cd server && PORT=8081 node index.js</code>
                 </Typography>
                 <Button variant="contained" onClick={() => window.location.reload()}>
                     Повторить
@@ -157,6 +158,7 @@ const AdEdit = () => {
                     <Button
                         variant="contained"
                         onClick={handleSave}
+                        disabled={saving}
                         sx={{
                             bgcolor: '#1890ff',
                             borderRadius: 2,
@@ -164,7 +166,7 @@ const AdEdit = () => {
                             '&:hover': { bgcolor: '#40a9ff' },
                         }}
                     >
-                        Сохранить
+                        {saving ? 'Сохранение...' : 'Сохранить'}
                     </Button>
                     <Button
                         variant="contained"

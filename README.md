@@ -19,9 +19,11 @@ PORT=8081 node index.js
 ```
 
 ### Удостоверьтесь, что порты совпадают с данной строкой в src/api/client.ts
+
 ```ts
 const API_BASE_URL = 'http://localhost:8081';
 ```
+
 ###  Перейдите в папку
 
 ```bash
@@ -39,7 +41,6 @@ cd ../src
 ```bash
  npm run dev
 ```
-
 
 ### Перейдите на данную страницу в браузере
 

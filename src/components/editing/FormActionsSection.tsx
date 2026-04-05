@@ -1,5 +1,5 @@
 import AutoFixHighOutlinedIcon from '@mui/icons-material/AutoFixHighOutlined';
-import { Box, Button, TextField, Typography } from '@mui/material';
+import { Box, Button, TextField, Typography, Stack } from '@mui/material';
 import type { JSX } from 'react';
 
 const DESCRIPTION_MAX_LENGTH = 1000;
@@ -44,12 +44,24 @@ export const FormActionsSection = ({
                 }}
                 inputProps={{ maxLength: DESCRIPTION_MAX_LENGTH }}
                 helperText={
-                    <Box component="span" display="flex" justifyContent="flex-end">
-                        <Typography variant="body2" color="text.disabled">
+                    <Box 
+                        component="span" 
+                        display="flex" 
+                        justifyContent="flex-end"
+                        sx={{ width: '100%' }}
+                    >
+                        <Typography 
+                            variant="body2" 
+                            color="text.disabled"
+                            component="span"  // Важно: рендерится как span, а не p
+                        >
                             {description.length} / {DESCRIPTION_MAX_LENGTH}
                         </Typography>
                     </Box>
                 }
+                FormHelperTextProps={{
+                    component: 'div', // HelperText будет как div, а не p
+                }}
                 sx={{
                     '& .MuiOutlinedInput-root': {
                         borderRadius: 2,
@@ -57,6 +69,7 @@ export const FormActionsSection = ({
                     },
                     '& .MuiFormHelperText-root': {
                         marginX: 0,
+                        marginTop: 0.5,
                     },
                 }}
             />

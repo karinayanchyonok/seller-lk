@@ -71,11 +71,9 @@ export const useAdsStore = create<AdsStore>()((set, get) => ({
         }
     },
 
-    fetchAdById: async (id: number) => {
-    console.log('fetchAdById вызван с id:', id);
+   fetchAdById: async (id: number) => {
     try {
         const response = await apiClient.get(`/items/${id}`);
-        console.log('Ответ сервера:', response.data);
         return response.data;
     } catch (error) {
         console.error('Ошибка в fetchAdById:', error);
@@ -121,27 +119,26 @@ export const useAdsStore = create<AdsStore>()((set, get) => ({
         get().updateFilteredAds();
     },
 
-    updateAd: async (id, data) => {
-        set({ loading: true });
+    // В useAdsStore.ts - полная замена метода updateAd
+    updateAd: async (id: number, data: ItemUpdateIn) => {
+        console.log('updateAd вызван');
         try {
             const response = await apiClient.put(`/items/${id}`, data);
-            const updatedAd = response.data;
+            console.log('Ответ сервера:', response.data);
 
-            // Обновляем allAds
+            // Обновляем локальный массив
             const { allAds } = get();
-            const index = allAds.findIndex((ad) => ad.id === id);
-            if (index !== -1) {
-                const newAllAds = [...allAds];
-                newAllAds[index] = updatedAd;
-                set({ allAds: newAllAds });
-            }
+            const newAllAds = allAds.map((ad) => (ad.id === id ? response.data : ad));
 
-            // Обновляем filteredAds
-            get().updateFilteredAds();
-            set({ loading: false });
+            set({
+                allAds: newAllAds,
+                filteredAds: newAllAds,
+            });
+
+            return response.data;
         } catch (error) {
-            console.error('Ошибка обновления:', error);
-            set({ error: 'Ошибка обновления объявления', loading: false });
+            console.error('Ошибка:', error);
+            throw error;
         }
     },
 

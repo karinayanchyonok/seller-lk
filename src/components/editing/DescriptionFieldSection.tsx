@@ -12,7 +12,7 @@ import {
     Typography,
     type SelectChangeEvent,
 } from '@mui/material';
-import { useEffect, useState, type JSX } from 'react';
+import { useEffect, useState, type JSX, useCallback, useRef } from 'react';
 
 interface DescriptionFieldSectionProps {
     params: any;
@@ -102,40 +102,39 @@ export const DescriptionFieldSection = ({
     category,
 }: DescriptionFieldSectionProps): JSX.Element => {
     const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
+    const isInitialized = useRef(false);
 
     const fields = getFieldsByCategory(category);
 
+    // Инициализация значений из params - только один раз при монтировании или смене category
     useEffect(() => {
-        // Инициализируем значения из params
-        const initialValues: Record<string, string> = {};
-        fields.forEach((field) => {
-            initialValues[field.id] = params?.[field.id] || '';
-        });
-        setFieldValues(initialValues);
-    }, [category, params, fields]);
+        if (!isInitialized.current && fields.length > 0) {
+            const initialValues: Record<string, string> = {};
+            fields.forEach((field) => {
+                initialValues[field.id] = params?.[field.id] || '';
+            });
+            setFieldValues(initialValues);
+            isInitialized.current = true;
+        }
+    }, [category, fields, params]);
 
-    const handleClear = (id: string) => {
-        const newValues = { ...fieldValues, [id]: '' };
-        setFieldValues(newValues);
-        setParams({ ...params, [id]: '' });
-    };
+    const handleClear = useCallback((id: string) => {
+        setFieldValues((prev) => ({ ...prev, [id]: '' }));
+        setParams((prev: any) => ({ ...prev, [id]: '' }));
+    }, [setParams]);
 
-    const handleSelectChange = (id: string, event: SelectChangeEvent<string>) => {
+    const handleSelectChange = useCallback((id: string, event: SelectChangeEvent<string>) => {
         const value = event.target.value;
-        const newValues = { ...fieldValues, [id]: value };
-        setFieldValues(newValues);
-        setParams({ ...params, [id]: value });
-    };
+        setFieldValues((prev) => ({ ...prev, [id]: value }));
+        setParams((prev: any) => ({ ...prev, [id]: value }));
+    }, [setParams]);
 
-    const handleInputChange = (id: string, value: string) => {
-        const newValues = { ...fieldValues, [id]: value };
-        setFieldValues(newValues);
-        setParams({ ...params, [id]: value });
-    };
+    const handleInputChange = useCallback((id: string, value: string) => {
+        setFieldValues((prev) => ({ ...prev, [id]: value }));
+        setParams((prev: any) => ({ ...prev, [id]: value }));
+    }, [setParams]);
 
-    const isEmpty = (id: string) => !fieldValues[id];
-
-    // Если нет полей для категории, показываем сообщение
+    // Если нет полей для категории
     if (fields.length === 0) {
         return (
             <Stack spacing={1} width="100%">
@@ -151,16 +150,15 @@ export const DescriptionFieldSection = ({
 
     return (
         <Stack spacing={1} width="100%">
-            {/* Section title */}
             <Typography variant="subtitle1" fontWeight={600} color="text.primary">
                 Характеристики
             </Typography>
 
             <Stack spacing={2} sx={{ maxWidth: 456, width: '100%' }}>
                 {fields.map((field) => {
-                    const empty = isEmpty(field.id);
-                    const borderColor = empty ? '#ffa940' : '#d9d9d9';
                     const currentValue = fieldValues[field.id] || '';
+                    const isEmpty = !currentValue;
+                    const borderColor = isEmpty ? '#ffa940' : '#d9d9d9';
 
                     return (
                         <Box key={field.id}>
@@ -203,9 +201,6 @@ export const DescriptionFieldSection = ({
                                             '&:hover .MuiOutlinedInput-notchedOutline': {
                                                 borderColor: borderColor,
                                             },
-                                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                                borderColor: '#1890ff',
-                                            },
                                             backgroundColor: '#fff',
                                             borderRadius: '8px',
                                         }}
@@ -241,9 +236,7 @@ export const DescriptionFieldSection = ({
                                             fullWidth
                                             value={currentValue}
                                             placeholder={field.placeholder}
-                                            onChange={(e) =>
-                                                handleInputChange(field.id, e.target.value)
-                                            }
+                                            onChange={(e) => handleInputChange(field.id, e.target.value)}
                                             sx={{
                                                 fontSize: 14,
                                                 py: 0.75,
