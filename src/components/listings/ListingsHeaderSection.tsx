@@ -1,16 +1,14 @@
 import { Box, Typography } from '@mui/material';
+import { useAdsStore } from '../../store/useAdsStore';
 import type { JSX } from 'react';
 
-interface ListingsHeaderSectionProps {
-    totalCount: number;
-}
+export const ListingsHeaderSection = (): JSX.Element => {
+    const totalCount = useAdsStore((state) => state.getTotalCount());
 
-export const ListingsHeaderSection = ({ totalCount }: ListingsHeaderSectionProps): JSX.Element => {
-    // Функция для правильного склонения слова "объявление"
     const getDeclension = (count: number) => {
         const lastDigit = count % 10;
         const lastTwoDigits = count % 100;
-        
+
         if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
             return 'объявлений';
         }

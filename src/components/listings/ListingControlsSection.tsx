@@ -3,7 +3,6 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import ListIcon from '@mui/icons-material/List';
 import SearchIcon from '@mui/icons-material/Search';
 import {
-    Autocomplete,
     MenuItem,
     Paper,
     Select,
@@ -11,8 +10,10 @@ import {
     TextField,
     ToggleButton,
     ToggleButtonGroup,
+    InputAdornment,
 } from '@mui/material';
-import React, { useState, type JSX } from 'react';
+import React, { type JSX } from 'react';
+import { useAdsStore } from '../../store/useAdsStore';
 
 const sortOptions = [
     { value: 'title_asc', label: 'По названию (А-Я)' },
@@ -24,12 +25,12 @@ const sortOptions = [
 ];
 
 export const ListingControlsSection = (): JSX.Element => {
-    const [viewMode, setViewMode] = useState<string>('grid');
-    const [sortValue, setSortValue] = useState<string>('newest');
+    const { viewMode, setViewMode, sortValue, setSortValue, searchTerm, setSearchTerm } =
+        useAdsStore();
 
     const handleViewChange = (_event: React.MouseEvent<HTMLElement>, newValue: string | null) => {
         if (newValue !== null) {
-            setViewMode(newValue);
+            setViewMode(newValue as 'grid' | 'list');
         }
     };
 
@@ -48,29 +49,27 @@ export const ListingControlsSection = (): JSX.Element => {
             }}
         >
             {/* Search field */}
-            <Autocomplete
-                freeSolo
-                options={[]}
+            <TextField
+                fullWidth
+                placeholder="Найти объявление..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                size="small"
+                InputProps={{
+                    endAdornment: (
+                        <InputAdornment position="end">
+                            <SearchIcon sx={{ color: '#707176', fontSize: 18 }} />
+                        </InputAdornment>
+                    ),
+                    sx: {
+                        backgroundColor: '#f6f6f8',
+                        borderRadius: 2,
+                        '& fieldset': { border: 'none' },
+                        fontSize: 14,
+                        color: '#707176',
+                    },
+                }}
                 sx={{ flex: 1 }}
-                renderInput={(params) => (
-                    <TextField
-                        {...params}
-                        placeholder="Найти объявление...."
-                        variant="outlined"
-                        size="small"
-                        InputProps={{
-                            ...params.InputProps,
-                            endAdornment: <SearchIcon sx={{ color: '#707176', fontSize: 18 }} />,
-                            sx: {
-                                backgroundColor: '#f6f6f8',
-                                borderRadius: 2,
-                                '& fieldset': { border: 'none' },
-                                fontSize: 14,
-                                color: '#707176',
-                            },
-                        }}
-                    />
-                )}
             />
 
             <Stack direction="row" alignItems="center" spacing={2}>
@@ -93,19 +92,6 @@ export const ListingControlsSection = (): JSX.Element => {
                                 backgroundColor: 'transparent',
                                 color: 'primary.main',
                             },
-                            '&:hover': {
-                                backgroundColor: 'rgba(0,0,0,0.04)',
-                            },
-                        },
-                        '& .MuiToggleButtonGroup-grouped:not(:last-of-type)': {
-                            borderRight: '1px solid #d0d0d6',
-                            borderRadius: 0,
-                        },
-                        '& .MuiToggleButtonGroup-grouped:first-of-type': {
-                            borderRadius: '8px 0 0 8px',
-                        },
-                        '& .MuiToggleButtonGroup-grouped:last-of-type': {
-                            borderRadius: '0 8px 8px 0',
                         },
                     }}
                 >
@@ -129,9 +115,7 @@ export const ListingControlsSection = (): JSX.Element => {
                         border: '2px solid #f4f4f6',
                         boxShadow: '0px 1px 4px rgba(0,0,0,0.1)',
                         fontSize: 14,
-                        color: 'text.primary',
-                        '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-                        '& .MuiSelect-select': { py: '5px', px: 2 },
+                        minWidth: 200,
                     }}
                 >
                     {sortOptions.map((option) => (
