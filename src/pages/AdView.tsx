@@ -225,7 +225,7 @@ export const AdView = () => {
     };
 
     return (
-        <Box sx={{ maxWidth: 1399, mx: 'auto', width: '100%', px: 2 }}>
+        <Box sx={{ width: '94%', py:2, px: 4, m:0}}>
             {/* Кнопка назад */}
             <Button
                 startIcon={<ArrowBackIcon />}
@@ -242,7 +242,7 @@ export const AdView = () => {
                     p: 4,
                     pb: 6,
                     bgcolor: 'background.paper',
-                    width: '100%',
+                    width: '90%',
                 }}
             >
                 {/* Header section */}
